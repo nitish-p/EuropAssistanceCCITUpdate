@@ -202,13 +202,105 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
                 Promoted = true;
                 Visible = true;
                 ApplicationArea = All;
-
                 trigger OnAction()
+                var
+                    i: Integer;
+                    Reportpdf: Report 50024;
+                    Ostream: OutStream;
+                    Instream: InStream;
+                    Base64Convert: Codeunit "Base64 Convert";
+                    tempblob: Codeunit "Temp Blob";
+                    Digisign: Codeunit "Digital Sign Integration";
+                    ResultBase64: Text;
+                    exportfilename: Text;
+                    ZipFileName: Text;
+                    DataCompression: Codeunit "Data Compression";
+                    RecRef: RecordRef;
+                    FldRef: FieldRef;
+                    Base64Content: text;
+                    TenantMedia: Record "Tenant Media";
+                    UpdateSalesInvHdr: Codeunit 50057;
                 begin
+                    // NP +++
+                    // tempblob.CreateOutStream(Ostream);
+                    // SalesInvHeader.RESET;
+                    // SalesInvHeader.SETRANGE("No.", rec."No.");
+                    // Reportpdf.SetTableView(SalesInvHeader);
+                    // Reportpdf.SaveAs('', ReportFormat::Pdf, Ostream);
+                    // tempblob.CreateInStream(Instream);
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", SalesInvHeader."No.");
-                    REPORT.RUNMODAL(50025, TRUE, TRUE, SalesInvHeader);
+                    // ResultBase64 := Digisign.DigiSign(Rec, Base64Convert.ToBase64(Instream));
+                    // exportfilename := Format(Rec."No.").Replace('/', '-') + '.pdf';
+                    // Clear(tempblob);
+                    // tempblob.CreateOutStream(Ostream);
+                    // Base64Convert.FromBase64(ResultBase64, Ostream);
+                    // tempblob.CreateInStream(Instream);
+                    // DownloadFromStream(Instream, '', '', '', exportfilename);
+                    // //REPORT.RUNMODAL(50025, TRUE, TRUE, SalesInvHeader);
+                    SalesInvHeader.Reset();
+                    CurrPage.SetSelectionFilter(SalesInvHeader);
+                    SalesInvHeader.SetRange(DS, false);
+                    if SalesInvHeader.FindFirst() then
+                        repeat
+                            Clear(tempblob);
+                            Clear(Ostream);
+                            Clear(Instream);
+                            TempBlob.CreateOutStream(Ostream);
+                            RecRef.GetTable(SalesInvHeader);
+                            FldRef := RecRef.Field(SalesInvHeader.FieldNo("No."));
+                            FldRef.SetRange(SalesInvHeader."No.");
+                            if RecRef.FindFirst() then begin
+                                Report.SaveAs(50024, '', ReportFormat::Pdf, Ostream, RecRef);
+                                TempBlob.CreateInStream(Instream);
+                                Sleep(1000);
+                                Clear(ResultBase64);
+                                Clear(Digisign);
+                                Base64Content := Base64Convert.ToBase64(Instream);
+                                ResultBase64 := Digisign.DigiSign(SalesInvHeader, Base64Content);
+                                exportfilename := Format(SalesInvHeader."No.").Replace('/', '-') + '.pdf';
+                                Clear(tempblob);
+                                Clear(Ostream);
+                                Clear(Instream);
+                                tempblob.CreateOutStream(Ostream);
+                                Base64Convert.FromBase64(ResultBase64, Ostream);
+                                tempblob.CreateInStream(Instream);
+                                //DataCompression.AddEntry(Instream, exportfilename);
+                                SalesInvHeader.DS := true;
+                                SalesInvHeader."DS Media".ImportStream(Instream, 'Signed Invoice ' + Format(SalesInvHeader."No.").Replace('/', '-'), 'application/pdf');
+                                //SalesInvHeader.Modify();
+                                UpdateSalesInvHdr.UpdateSalesInvoiceHeader(SalesInvHeader);
+                            end
+                        until SalesInvHeader.Next() = 0;
+
+
+
+                    ZipFileName := 'Attachments_' + Format(CurrentDateTime) + '.zip';
+                    DataCompression.CreateZipArchive();
+                    SalesInvHeader.Reset();
+                    CurrPage.SetSelectionFilter(SalesInvHeader);
+                    if SalesInvHeader.FindFirst() then begin
+                        repeat
+                            Clear(Instream);
+
+                            if TenantMedia.Get(SalesInvHeader."DS Media".MediaId) then begin
+                                TenantMedia.CalcFields(Content);
+                                if TenantMedia.Content.HasValue then begin
+                                    exportfilename := Format(SalesInvHeader."No.").Replace('/', '-') + '.pdf';
+                                    TenantMedia.Content.CreateInStream(InStream);
+                                    DataCompression.AddEntry(Instream, exportfilename);
+                                end;
+                            end;
+                        until SalesInvHeader.Next() = 0;
+                    end;
+                    TempBlob.CreateOutStream(Ostream);
+                    DataCompression.SaveZipArchive(Ostream);
+                    TempBlob.CreateInStream(Instream);
+                    DownloadFromStream(Instream, '', '', '', ZipFileName);
+
+                    //             
+
+
+                    // prdp ---
                 end;
             }
             action("Send To Customer New")
@@ -226,6 +318,9 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
                           THEN
                         EXIT;
 
+                    if Rec."Re-Dispatch" = false then
+                        Error('IRN must be generate for invoice %1', Rec."No.");
+
 
                     Cust.RESET;
                     Cust.SETRANGE("No.", Rec."Sell-to Customer No.");
@@ -234,27 +329,10 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
                         ERROR('Define E-Mail ID for customer %1', Cust."No.");
                     END;
 
-                    IF ((Rec."Posting Date" > 20211231D) AND (Rec."GST Customer Type" = "GST Customer Type"::Registered)) THEN BEGIN
-                        EInvEntry.RESET;
-                        EInvEntry.SETRANGE(EInvEntry."Document Type", EInvEntry."Document Type"::Invoice);
-                        EInvEntry.SETRANGE("Document No.", Rec."No.");
-                        EInvEntry.SETRANGE(EInvEntry.Status, EInvEntry.Status::Generated);
-                        EInvEntry.SETFILTER(IRN, '<>%1', '');
-                        IF NOT EInvEntry.FINDFIRST THEN BEGIN
-                            ERROR('IRN must be generate for invoice %1', Rec."No.");
-                        END;
-                    END;
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", Rec."No.");
-                    IF SalesInvHeader.FINDFIRST THEN BEGIN
-                        SalesInvHeader.Select := TRUE;
-                        SalesInvHeader.MODIFY;
-                    END;
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", Rec."No.");
-                    REPORT.RUNMODAL(50031, FALSE, FALSE, SalesInvHeader);
+
+
 
                     // prdp ---
                 end;
@@ -266,12 +344,36 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
                 Visible = true;
 
                 trigger OnAction()
+                var
+                    CustContact: Text;
+                    MonthText: Text;
+                    day: Text;
+                    EmailUserName: text;
+                    CompInfo: Record "Company Information";
+                    "PurchPayable": Record "Purchases & Payables Setup";
+                    email: Codeunit Email;
+                    emailmsg: Codeunit "Email Message";
+                    AttachmentName: Text[250];
+                    FileName: Text[50];
+                    TransactionAPI: Record "Transaction API";
+                    tempblob: Codeunit "Temp Blob";
+                    torecipients: List of [Text];
+                    ccRecipients: List of [Text];
+                    BccRecipients: List of [Text];
+                    instrm: InStream;
+                    outstrm: OutStream;
+                    recordlink: Record "Record Link1";
+                    updaterec: Codeunit 50057;
+
                 begin
                     // prdp +++
 
                     IF NOT CONFIRM('Do you want Send Mail to selected customers ?', FALSE)
                       THEN
                         EXIT;
+                    if Rec."Re-Dispatch" = false then
+                        Error('IRN must be generate for invoice %1', Rec."No.");
+
 
                     Cust.RESET;
                     Cust.SETRANGE("No.", Rec."Sell-to Customer No.");
@@ -280,28 +382,89 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
                         ERROR('Define E-Mail ID for customer %1', Cust."No.");
                     END;
 
-                    IF ((Rec."Posting Date" > 20211231D) AND (Rec."GST Customer Type" = "GST Customer Type"::Registered)) THEN BEGIN
-                        EInvEntry.RESET;
-                        EInvEntry.SETRANGE(EInvEntry."Document Type", EInvEntry."Document Type"::Invoice);
-                        EInvEntry.SETRANGE("Document No.", Rec."No.");
-                        EInvEntry.SETRANGE(EInvEntry.Status, EInvEntry.Status::Generated);
-                        EInvEntry.SETFILTER(IRN, '<>%1', '');
-                        IF NOT EInvEntry.FINDFIRST THEN BEGIN
-                            ERROR('IRN must be generate for invoice %1', Rec."No.");
-                        END;
+                    Cust.RESET;
+                    Cust.SETRANGE("No.", Rec."Sell-to Customer No.");
+                    IF Cust.FINDFIRST THEN BEGIN
+                        //ERROR('Define E-Mail ID for customer %1', Cust."No.");
                     END;
+                    if not Rec."DS Media".HasValue then
+                        Error('Generate DSC first');
+
+                    CustContact := '';
+                    MonthText := '';
+                    day := '';
 
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", Rec."No.");
-                    IF SalesInvHeader.FINDFIRST THEN BEGIN
-                        SalesInvHeader.Select := TRUE;
-                        SalesInvHeader.MODIFY;
-                    END;
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", Rec."No.");
-                    REPORT.RUNMODAL(50025, FALSE, FALSE, SalesInvHeader);
+                    if rec."Invoice Date" <> 0D then begin
+
+                        MonthText := Format(rec."Invoice Date", 0, '<Month Text>') + ' ' + Format(Date2dmy(rec."Invoice Date", 3));
+
+                        day := Format(Date2dmy(rec."Invoice Date", 1));
+                        if StrLen(day) = 1 then begin
+                            day := '0' + day;
+                        end;
+
+                    end else begin
+
+                        MonthText := Format(rec."Posting Date", 0, '<Month Text>') + ' ' + Format(Date2dmy(rec."Posting Date", 3));
+
+                        day := Format(Date2dmy(rec."Posting Date", 1));
+                        if StrLen(day) = 1 then begin
+                            day := '0' + day;
+                        end;
+
+                    end;
+
+
+
+                    torecipients.Add(Cust."E-Mail");
+                    ccRecipients.Add(Cust."Cc E-mail ID");
+                    BccRecipients.Add(Cust."Bcc E-mail ID");
+
+                    emailmsg.Create(torecipients, Cust.Name + ': Sales Invoice ' + rec."No." + ', ' + day + ' ' + MonthText, '', true, ccRecipients, BccRecipients);
+                    emailmsg.AppendToBody('Dear ' + 'Finance Team,');
+
+
+                    //SMTPMail.CreateMessage('Europ Assistance India', SmtpEmail, CustomerEmail, custName + ': Sales Invoice ' + rec."No." + ', ' + day + ' ' + MonthText, '', true); //"Sales Invoice Header"."No.",'',TRUE);
+                    emailmsg.AppendToBody('Dear ' + 'Sir/Madam' + ',');
+                    emailmsg.AppendToBody('<br><br>');
+                    emailmsg.AppendToBody('Please find enclosed the invoice for the ' + MonthText + ' as per our service agreement or equivalent document(s). Kindly note, this is a digitally signed, electronic invoice.');
+                    emailmsg.AppendToBody('<br><br>');
+                    emailmsg.AppendToBody('Please acknowledge for receipt of  attached invoice and if no acknowledgement received within 7 days from receipt of this electronic email then it is deemed to be the acceptance of Invoice including GST as applicable');
+                    emailmsg.AppendToBody('<br><br>');
+                    emailmsg.AppendToBody('An early settlement of the invoice will be much appreciated.');
+                    emailmsg.AppendToBody('<br><br>');
+                    emailmsg.AppendToBody('Thank you.');
+                    emailmsg.AppendToBody('<br><br>');
+                    emailmsg.AppendToBody('Regards,');
+                    emailmsg.AppendToBody('<br><br>');
+                    emailmsg.AppendToBody(EmailUserName);
+                    emailmsg.AppendToBody('<br><br>');
+                    tempblob.CreateOutStream(outstrm);
+                    Rec."DS Media".ExportStream(outstrm);
+                    tempblob.CreateInStream(instrm);
+                    emailmsg.AddAttachment('Invoice_' + ConvertStr(Rec."No.", '/', '-') + '.pdf', 'PDF', instrm);
+
+                    recordLink.Reset;
+                    recordLink.SetRange("No.", rec."Pre-Assigned No.");
+                    recordLink.SetRange("Policy Details", true);
+                    if recordLink.FindFirst then begin
+                        recordlink.Note.CreateOutStream(outstrm);
+                        tempblob.CreateInStream(instrm);
+                        emailmsg.AddAttachment('Policy Details.pdf', 'PDF', instrm);
+                    end;
+
+                    email.Send(emailmsg, Enum::"Email Scenario"::Default);
+
+                    Rec.Validate("Mail Sent", true);
+                    Rec."Invoice Sent Date & Time" := CurrentDatetime;
+                    //Rec."Signed Invoice" := true;
+                    updaterec.UpdateSalesInvoiceHeader(Rec);
+                    //Rec.Modify;
+                    // SalesInvHeader.RESET;
+                    // SalesInvHeader.SETRANGE("No.", Rec."No.");
+                    // REPORT.RUNMODAL(50025, FALSE, FALSE, SalesInvHeader);
 
                     // prdp ---
                 end;
@@ -310,7 +473,7 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
             {
                 ApplicationArea = All;
                 Promoted = true;
-
+                Visible = false;
                 trigger OnAction()
                 begin
                     // prdp +++
@@ -328,12 +491,12 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
                         ERROR('Define E-Mail ID for customer %1',Cust."No.");
                       END;
                       */
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", Rec."No.");
-                    IF SalesInvHeader.FINDFIRST THEN BEGIN
-                        SalesInvHeader.Select := TRUE;
-                        SalesInvHeader.MODIFY;
-                    END;
+                    // SalesInvHeader.RESET;
+                    // SalesInvHeader.SETRANGE("No.", Rec."No.");
+                    // IF SalesInvHeader.FINDFIRST THEN BEGIN
+                    //     SalesInvHeader.Select := TRUE;
+                    //     SalesInvHeader.MODIFY;
+                    // END;
 
                     SalesInvHeader.RESET;
                     SalesInvHeader.SETRANGE("No.", Rec."No.");
@@ -374,7 +537,7 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
 
                 trigger OnAction()
                 var
-                    RecordLink: Record "Record Link";
+                    RecordLink: Record "Record Link1";
                     FileName: Text[250];
                     ImportFileName: XMLport "Attach File";
                     OrderNo: Code[30];
@@ -396,86 +559,52 @@ pageextension 50024 "PostedSalesInvoice" extends "Posted Sales Invoice"
                     StartPt: Integer;
                     Temp: Text[250];
                     FileManagement: Codeunit "File Management";
+                    instrm: InStream;
+                    outstrm: OutStream;
+                    LinkID: Integer;
                 begin
-
-                    // prdp +++
-
-
-                    // RecordLink.RESET;
-                    // RecordLink.SETRANGE("No.", "Pre-Assigned No.");
-                    // RecordLink.SETRANGE("Policy Details", TRUE);
-                    // RecordLink.SETFILTER("Attachement Name", '<>%1', '');
-                    // IF RecordLink.FINDFIRST THEN BEGIN
-                    //     ERROR('Policy details are already attached for invoice %1', "Pre-Assigned No.");
-                    // END;
-
-                    ImportFileName.RUN;
-
-                    IF ImportFileName.FILENAME <> '' THEN BEGIN
-
-                        // to get the path of the filename to be copied from client to server
-                        //FileName:=DELSTR('\\172.16.5.3\Nav Attachment\'+ImportFileName.FILENAME,29,3);
-                        //FileName:=DELSTR('\\EAINPNAV004\D\Nav Attachment\'+ImportFileName.FILENAME,29,3);//CCIT NitishPatel 23/01/23
-                        //  FileName:=DELCHR(UserPath+ImportFileName.FILENAME,'=',':');
-                        FileName := ImportFileName.FILENAME;//CCIT NitishPatel 23/01/23
-                                                            // to convert the invoice no. in text format
-                                                            //OrderNo := FORMAT("No.");
-
-                        // to get the invoice no. starting from 5th charecter to avoid error due to '\'
-                        No := CONVERTSTR(OrderNo, '/', '-');
-
-                        // to get the FinalName of file that is to be copied to server
-                        FinalName := COPYSTR(FileManagement.GetFileNameWithoutExtension(ImportFileName.FILENAME), 1, MAXSTRLEN(FinalName));
-                        // to get the path of destination folder at server from purchase & payable set up
-                        GenLedSetup.RESET;
-                        GenLedSetup.GET('');
-
-                        IF GenLedSetup."Policy Details Attachment" = '' THEN
-                            ERROR('please add Policy Details Attachment Path in general ledger setup');
-
-                        Destination := GenLedSetup."Policy Details Attachment" + FinalName;
-                        // Destination:=DELCHR(GenLedSetup."Purchase Invoice Path",'=',':')+FinalName;
-
-                        // to get the extension of file to be copied
-                        Temp := ImportFileName.FILENAME;
-                        StartPt := STRPOS(Temp, '.');
-                        Length := STRLEN(Temp);
-                        Extension := COPYSTR(Temp, StartPt, Length);
-
-                        // to insert the link in record link table
-                        // RecordLink.RESET;
-                        // RecordLink."No." := "Pre-Assigned No.";
-                        // RecordLink.SourcerPath := FileName;
-                        // RecordLink."Attachement Name" := FinalName;
-                        // RecordLink.URL1 := Destination + Extension;
-                        // RecordLink.URL3 := Extension;
-                        // RecordLink.Created := CURRENTDATETIME;
-                        // RecordLink."User ID" := USERID;
-                        // RecordLink.Company := COMPANYNAME;
-                        // RecordLink."Policy Details" := TRUE;
-                        // RecordLink.INSERT;
-
-
-                        // to copy the file to server
-                        // FILE.COPY(FileName, Destination + Extension);
-                        MESSAGE('Attached and Saved to Server');
-
+                    RecordLink.RESET;
+                    RecordLink.SETRANGE("No.", Rec."Pre-Assigned No.");
+                    RecordLink.SETRANGE("Policy Details", TRUE);
+                    RecordLink.SETFILTER("Attachement Name", '<>%1', '');
+                    IF RecordLink.FINDFIRST THEN BEGIN
+                        ERROR('Policy details are already attached for invoice %1', Rec."Pre-Assigned No.");
                     END;
 
-
-                    // clear the XMLPORT to avoid error after 1st file attach & attach multiple files at a time
-                    CLEAR(ImportFileName);
-
-                    // prdp ---
+                    UploadIntoStream('Please Select File', '', 'All Files (*.*)|*.*', FinalName, instrm);
+                    //to insert the link in record link table
+                    RecordLink.Reset();
+                    if RecordLink.FindLast() then
+                        LinkID := RecordLink."Link Id" + 1
+                    else
+                        LinkID := LinkID + 1;
+                    RecordLink.Init();
+                    RecordLink."No." := Rec."Pre-Assigned No.";
+                    //RecordLink.SourcerPath := FileName;
+                    RecordLink."Attachement Name" := FinalName;
+                    RecordLink.URL1 := FileName;
+                    RecordLink.URL3 := Extension;
+                    RecordLink.Note.CreateOutStream(outstrm);
+                    CopyStream(outstrm, instrm);
+                    RecordLink.Created := CURRENTDATETIME;
+                    RecordLink."User ID" := USERID;
+                    RecordLink.Company := COMPANYNAME;
+                    RecordLink."Policy Details" := TRUE;
+                    RecordLink."Link Id" := LinkID;
+                    RecordLink.INSERT;
+                    // to copy the file to server
+                    // FILE.COPY(FileName, Destination + Extension);
+                    MESSAGE('Attached and Saved to Server');
                 end;
             }
-            // action("Files Attached")
-            // {
-            //     Image = Links;
-            //     Promoted = true;
-            //     //RunObject = Page 50014;
-            //     //RunPageLink = "No." = FIELD("Pre-Assigned No.");
-            // }
+            action("Files Attached")
+            {
+                ApplicationArea = All;
+                Image = Links;
+                Promoted = true;
+                RunObject = Page 50014;
+                RunPageLink = "No." = FIELD("Pre-Assigned No.");
+            }
 
 
 

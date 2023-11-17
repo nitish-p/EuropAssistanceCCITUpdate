@@ -133,66 +133,66 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                     REPORT.RUNMODAL(50002, TRUE, TRUE, SalesInvHdr);
                 end;
             }
-            action(Taxable)
-            {
-                Caption = 'Taxable';
-                ApplicationArea = All;
-                Ellipsis = true;
-                Image = "Filter";
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
+            // action(Taxable)
+            // {
+            //     Caption = 'Taxable';
+            //     ApplicationArea = All;
+            //     Ellipsis = true;
+            //     Image = "Filter";
+            //     Promoted = true;
+            //     PromotedCategory = Process;
+            //     PromotedIsBig = true;
 
-                trigger OnAction()
-                begin
-                    ShowInvoiceTypeDoc(Rec."Invoice Type"::Taxable);
-                end;
-            }
-            action("Bill of Supply")
-            {
-                Caption = 'Bill of Supply';
-                ApplicationArea = All;
-                Ellipsis = true;
-                Image = "Filter";
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
+            //     trigger OnAction()
+            //     begin
+            //         ShowInvoiceTypeDoc(Rec."Invoice Type"::Taxable);
+            //     end;
+            // }
+            // action("Bill of Supply")
+            // {
+            //     Caption = 'Bill of Supply';
+            //     ApplicationArea = All;
+            //     Ellipsis = true;
+            //     Image = "Filter";
+            //     Promoted = true;
+            //     PromotedCategory = Process;
+            //     PromotedIsBig = true;
 
-                trigger OnAction()
-                begin
-                    ShowInvoiceTypeDoc(Rec."Invoice Type"::"Bill of Supply");
-                end;
-            }
-            action(Export)
-            {
-                Caption = 'Export';
-                Ellipsis = true;
-                ApplicationArea = All;
-                Image = "Filter";
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
+            //     trigger OnAction()
+            //     begin
+            //         ShowInvoiceTypeDoc(Rec."Invoice Type"::"Bill of Supply");
+            //     end;
+            // }
+            // action(Export)
+            // {
+            //     Caption = 'Export';
+            //     Ellipsis = true;
+            //     ApplicationArea = All;
+            //     Image = "Filter";
+            //     Promoted = true;
+            //     PromotedCategory = Process;
+            //     PromotedIsBig = true;
 
-                trigger OnAction()
-                begin
-                    ShowInvoiceTypeDoc(Rec."Invoice Type"::Export);
-                end;
-            }
-            action(Supplementary)
-            {
-                Caption = 'Supplementary';
-                Ellipsis = true;
-                Image = "Filter";
-                Promoted = true;
-                ApplicationArea = All;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
+            //     trigger OnAction()
+            //     begin
+            //         ShowInvoiceTypeDoc(Rec."Invoice Type"::Export);
+            //     end;
+            // }
+            // action(Supplementary)
+            // {
+            //     Caption = 'Supplementary';
+            //     Ellipsis = true;
+            //     Image = "Filter";
+            //     Promoted = true;
+            //     ApplicationArea = All;
+            //     PromotedCategory = Process;
+            //     PromotedIsBig = true;
 
-                trigger OnAction()
-                begin
-                    ShowInvoiceTypeDoc(Rec."Invoice Type"::Supplementary);
-                end;
-            }
+            //     trigger OnAction()
+            //     begin
+            //         ShowInvoiceTypeDoc(Rec."Invoice Type"::Supplementary);
+            //     end;
+            // }
             //Richa
             /*
             action("Debit Note")
@@ -210,16 +210,16 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                 end;
             }
             */
-            action("Non GST")
-            {
-                Caption = 'Non GST';
-                ApplicationArea = All;
+            // action("Non GST")
+            // {
+            //     Caption = 'Non GST';
+            //     ApplicationArea = All;
 
-                trigger OnAction()
-                begin
-                    ShowInvoiceTypeDoc(Rec."Invoice Type"::"Non-GST");
-                end;
-            }
+            //     trigger OnAction()
+            //     begin
+            //         ShowInvoiceTypeDoc(Rec."Invoice Type"::"Non-GST");
+            //     end;
+            // }
             action("Print Voucher")
             {
                 Caption = 'Print Voucher';
@@ -310,8 +310,8 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                                 //DataCompression.AddEntry(Instream, exportfilename);
                                 SalesInvHeader.DS := true;
                                 SalesInvHeader."DS Media".ImportStream(Instream, 'Signed Invoice ' + Format(SalesInvHeader."No.").Replace('/', '-'), 'application/pdf');
-                                SalesInvHeader.Modify();
-                                //UpdateSalesInvHdr.UpdateSalesInvoiceHeader(SalesInvHeader);
+                                //SalesInvHeader.Modify();
+                                UpdateSalesInvHdr.UpdateSalesInvoiceHeader(SalesInvHeader);
                             end
                         until SalesInvHeader.Next() = 0;
 
@@ -348,91 +348,91 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
             }
             //Richa
 
-            action(Select)
-            {
-                Image = SelectField;
-                Promoted = true;
+            // action(Select)
+            // {
+            //     Image = SelectField;
+            //     Promoted = true;
 
-                trigger OnAction()
-                begin
+            //     trigger OnAction()
+            //     begin
 
-                    // prdp +++
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", rec."No.");
-                    IF SalesInvHeader.FINDFIRST THEN BEGIN
-                        SalesInvHeader.Select := TRUE;
-                        SalesInvHeader.MODIFY;
-                    END;
-                    // prdp ---
-                end;
-            }
+            //         // prdp +++
+            //         SalesInvHeader.RESET;
+            //         SalesInvHeader.SETRANGE("No.", rec."No.");
+            //         IF SalesInvHeader.FINDFIRST THEN BEGIN
+            //             SalesInvHeader.Select := TRUE;
+            //             SalesInvHeader.MODIFY;
+            //         END;
+            //         // prdp ---
+            //     end;
+            // }
 
-            action(Deselct)
-            {
-                Image = CancelLine;
-                Promoted = true;
-                ApplicationArea = All;
+            // action(Deselct)
+            // {
+            //     Image = CancelLine;
+            //     Promoted = true;
+            //     ApplicationArea = All;
 
-                trigger OnAction()
-                begin
-                    // prdp +++
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE("No.", rec."No.");
-                    IF SalesInvHeader.FINDFIRST THEN BEGIN
-                        SalesInvHeader.Select := FALSE;
-                        SalesInvHeader.MODIFY;
-                    END;
-                    // prdp ---
-                end;
-            }
-            action("Select All")
-            {
-                Image = SelectEntries;
-                Promoted = true;
-                ApplicationArea = All;
+            //     trigger OnAction()
+            //     begin
+            //         // prdp +++
+            //         SalesInvHeader.RESET;
+            //         SalesInvHeader.SETRANGE("No.", rec."No.");
+            //         IF SalesInvHeader.FINDFIRST THEN BEGIN
+            //             SalesInvHeader.Select := FALSE;
+            //             SalesInvHeader.MODIFY;
+            //         END;
+            //         // prdp ---
+            //     end;
+            // }
+            // action("Select All")
+            // {
+            //     Image = SelectEntries;
+            //     Promoted = true;
+            //     ApplicationArea = All;
 
-                trigger OnAction()
-                begin
-                    // prdp +++
-                    IF NOT CONFIRM('Do you want Select all Invoices ?', FALSE)
-                      THEN
-                        EXIT;
+            //     trigger OnAction()
+            //     begin
+            //         // prdp +++
+            //         IF NOT CONFIRM('Do you want Select all Invoices ?', FALSE)
+            //           THEN
+            //             EXIT;
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.COPYFILTERS(Rec);
-                    SalesInvHeader.SETFILTER(SalesInvHeader."No.", '<>%1', '');
-                    IF SalesInvHeader.FINDSET THEN
-                        REPEAT
-                            SalesInvHeader.Select := TRUE;
-                            SalesInvHeader.MODIFY;
-                        UNTIL SalesInvHeader.NEXT = 0;
-                    // prdp ---
-                end;
-            }
-            action("Deselect All")
-            {
-                Image = UnApply;
-                Promoted = true;
-                ApplicationArea = All;
+            //         SalesInvHeader.RESET;
+            //         SalesInvHeader.COPYFILTERS(Rec);
+            //         SalesInvHeader.SETFILTER(SalesInvHeader."No.", '<>%1', '');
+            //         IF SalesInvHeader.FINDSET THEN
+            //             REPEAT
+            //                 SalesInvHeader.Select := TRUE;
+            //                 SalesInvHeader.MODIFY;
+            //             UNTIL SalesInvHeader.NEXT = 0;
+            //         // prdp ---
+            //     end;
+            // }
+            // action("Deselect All")
+            // {
+            //     Image = UnApply;
+            //     Promoted = true;
+            //     ApplicationArea = All;
 
-                trigger OnAction()
-                begin
-                    // prdp +++
-                    IF NOT CONFIRM('Do you want Deselect all Invoices ?', FALSE)
-                      THEN
-                        EXIT;
+            //     trigger OnAction()
+            //     begin
+            //         // prdp +++
+            //         IF NOT CONFIRM('Do you want Deselect all Invoices ?', FALSE)
+            //           THEN
+            //             EXIT;
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.COPYFILTERS(Rec);
-                    SalesInvHeader.SETRANGE(Select, TRUE);
-                    IF SalesInvHeader.FINDSET THEN
-                        REPEAT
-                            SalesInvHeader.Select := FALSE;
-                            SalesInvHeader.MODIFY;
-                        UNTIL SalesInvHeader.NEXT = 0;
-                    // prdp ---
-                end;
-            }
+            //         SalesInvHeader.RESET;
+            //         SalesInvHeader.COPYFILTERS(Rec);
+            //         SalesInvHeader.SETRANGE(Select, TRUE);
+            //         IF SalesInvHeader.FINDSET THEN
+            //             REPEAT
+            //                 SalesInvHeader.Select := FALSE;
+            //                 SalesInvHeader.MODIFY;
+            //             UNTIL SalesInvHeader.NEXT = 0;
+            //         // prdp ---
+            //     end;
+            // }
             action("Send To Customer New")
             {
                 Image = SendAsPDF;
@@ -500,12 +500,31 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
 
                 trigger OnAction()
                 var
+                    CustContact: Text;
+                    MonthText: Text;
+                    day: Text;
+                    EmailUserName: text;
+                    CompInfo: Record "Company Information";
+                    "PurchPayable": Record "Purchases & Payables Setup";
+                    email: Codeunit Email;
+                    emailmsg: Codeunit "Email Message";
+                    AttachmentName: Text[250];
+                    FileName: Text[50];
+                    TransactionAPI: Record "Transaction API";
+                    tempblob: Codeunit "Temp Blob";
+                    torecipients: List of [Text];
+                    ccRecipients: List of [Text];
+                    BccRecipients: List of [Text];
+                    instrm: InStream;
+                    outstrm: OutStream;
+                    recordlink: Record "Record Link1";
+                    updaterec: Codeunit 50057;
                     cust: Record Customer;
                 begin
                     // prdp +++
 
                     SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE(Select, TRUE);
+                    CurrPage.SetSelectionFilter(SalesInvHeader);
                     IF NOT SalesInvHeader.FINDFIRST THEN BEGIN
                         ERROR('No invoice selected for send to customer');
                     END;
@@ -515,7 +534,14 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                         EXIT;
 
                     SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE(Select, TRUE);
+                    CurrPage.SetSelectionFilter(SalesInvHeader);
+                    IF SalesInvHeader.FINDSET THEN
+                        REPEAT
+                            if SalesInvHeader."Re-Dispatch" = false then
+                                Error('IRN must be generate for invoice %1', Rec."No.");
+                        UNTIL SalesInvHeader.NEXT = 0;
+                    SalesInvHeader.RESET;
+                    CurrPage.SetSelectionFilter(SalesInvHeader);
                     IF SalesInvHeader.FINDSET THEN
                         REPEAT
                             Cust.RESET;
@@ -524,35 +550,95 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                             IF Cust.FINDFIRST THEN BEGIN
                                 ERROR('Define E-Mail ID for customer %1', Cust."No.");
                             END;
-                        //Richa
-                        /*
-                        IF ((SalesInvHeader."Posting Date" > 033121D) AND (SalesInvHeader."GST Customer Type"=SalesInvHeader."GST Customer Type"::Registered)) THEN BEGIN
-                        EInvEntry.RESET;
-                        EInvEntry.SETRANGE(EInvEntry."Document Type",EInvEntry."Document Type"::Invoice);
-                        EInvEntry.SETRANGE("Document No.",SalesInvHeader."No.");
-                        EInvEntry.SETRANGE(EInvEntry.Status,EInvEntry.Status::Generated);
-                        EInvEntry.SETFILTER(IRN,'<>%1','');
-                        IF NOT EInvEntry.FINDFIRST THEN BEGIN
-                          ERROR('IRN must be generate for invoice %1',SalesInvHeader."No.");
-                        END;
-                        END;
-                        */
+
+                            Cust.RESET;
+                            Cust.SETRANGE("No.", SalesInvHeader."Sell-to Customer No.");
+                            IF Cust.FINDFIRST THEN BEGIN
+                                //ERROR('Define E-Mail ID for customer %1', Cust."No.");
+                            END;
+                            if not SalesInvHeader."DS Media".HasValue then
+                                Error('Generate DSC first');
+
+                            CustContact := '';
+                            MonthText := '';
+                            day := '';
+
+
+
+                            if SalesInvHeader."Invoice Date" <> 0D then begin
+
+                                MonthText := Format(SalesInvHeader."Invoice Date", 0, '<Month Text>') + ' ' + Format(Date2dmy(SalesInvHeader."Invoice Date", 3));
+
+                                day := Format(Date2dmy(SalesInvHeader."Invoice Date", 1));
+                                if StrLen(day) = 1 then begin
+                                    day := '0' + day;
+                                end;
+
+                            end else begin
+
+                                MonthText := Format(SalesInvHeader."Posting Date", 0, '<Month Text>') + ' ' + Format(Date2dmy(SalesInvHeader."Posting Date", 3));
+
+                                day := Format(Date2dmy(SalesInvHeader."Posting Date", 1));
+                                if StrLen(day) = 1 then begin
+                                    day := '0' + day;
+                                end;
+
+                            end;
+
+
+
+                            torecipients.Add(Cust."E-Mail");
+                            ccRecipients.Add(Cust."Cc E-mail ID");
+                            BccRecipients.Add(Cust."Bcc E-mail ID");
+
+                            emailmsg.Create(torecipients, Cust.Name + ': Sales Invoice ' + SalesInvHeader."No." + ', ' + day + ' ' + MonthText, '', true, ccRecipients, BccRecipients);
+                            emailmsg.AppendToBody('Dear ' + 'Finance Team,');
+
+
+                            //SMTPMail.CreateMessage('Europ Assistance India', SmtpEmail, CustomerEmail, custName + ': Sales Invoice ' + rec."No." + ', ' + day + ' ' + MonthText, '', true); //"Sales Invoice Header"."No.",'',TRUE);
+                            emailmsg.AppendToBody('Dear ' + 'Sir/Madam' + ',');
+                            emailmsg.AppendToBody('<br><br>');
+                            emailmsg.AppendToBody('Please find enclosed the invoice for the ' + MonthText + ' as per our service agreement or equivalent document(s). Kindly note, this is a digitally signed, electronic invoice.');
+                            emailmsg.AppendToBody('<br><br>');
+                            emailmsg.AppendToBody('Please acknowledge for receipt of  attached invoice and if no acknowledgement received within 7 days from receipt of this electronic email then it is deemed to be the acceptance of Invoice including GST as applicable');
+                            emailmsg.AppendToBody('<br><br>');
+                            emailmsg.AppendToBody('An early settlement of the invoice will be much appreciated.');
+                            emailmsg.AppendToBody('<br><br>');
+                            emailmsg.AppendToBody('Thank you.');
+                            emailmsg.AppendToBody('<br><br>');
+                            emailmsg.AppendToBody('Regards,');
+                            emailmsg.AppendToBody('<br><br>');
+                            emailmsg.AppendToBody(EmailUserName);
+                            emailmsg.AppendToBody('<br><br>');
+                            tempblob.CreateOutStream(outstrm);
+                            SalesInvHeader."DS Media".ExportStream(outstrm);
+                            tempblob.CreateInStream(instrm);
+                            emailmsg.AddAttachment('Invoice_' + ConvertStr(SalesInvHeader."No.", '/', '-') + '.pdf', 'PDF', instrm);
+
+                            recordLink.Reset;
+                            recordLink.SetRange("No.", SalesInvHeader."Pre-Assigned No.");
+                            recordLink.SetRange("Policy Details", true);
+                            if recordLink.FindFirst then begin
+                                recordlink.Note.CreateOutStream(outstrm);
+                                tempblob.CreateInStream(instrm);
+                                emailmsg.AddAttachment('Policy Details.pdf', 'PDF', instrm);
+                            end;
+
+                            email.Send(emailmsg, Enum::"Email Scenario"::Default);
+
+                            SalesInvHeader.Validate("Mail Sent", true);
+                            SalesInvHeader."Invoice Sent Date & Time" := CurrentDatetime;
+                            //SalesInvHeader."Signed Invoice" := true;
+                            updaterec.UpdateSalesInvoiceHeader(SalesInvHeader);
+
                         UNTIL SalesInvHeader.NEXT = 0;
-
-
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE(Select, TRUE);
-                    REPORT.RUNMODAL(50025, FALSE, FALSE, SalesInvHeader);
-
-
-                    // prdp ---
                 end;
             }
             action("Temp Digital Invoice Export")
             {
                 Promoted = true;
                 ApplicationArea = All;
-
+                Visible = false;
                 trigger OnAction()
                 begin
                     // prdp +++
@@ -717,7 +803,7 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                 begin
 
                     SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE(Select, TRUE);
+                    CurrPage.SetSelectionFilter(SalesInvHeader);
                     IF SalesInvHeader.FINDFIRST THEN BEGIN
 
                         IF NOT CONFIRM('Do you want to Generate IRN for selected invoices ?', FALSE)
@@ -725,7 +811,7 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                             EXIT;
 
                         SIH.RESET;
-                        SIH.SETRANGE(Select, TRUE);
+                        CurrPage.SetSelectionFilter(SalesInvHeader);
                         SIH.SETRANGE("Re-Dispatch", FALSE);
                         SIH.SETRANGE(Canceled, FALSE);
                         SIH.SETRANGE(SIH."GST Customer Type", SIH."GST Customer Type"::Registered);
@@ -802,13 +888,13 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
 
                     END;
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE(Select, TRUE);
-                    IF SalesInvHeader.FINDSET THEN
-                        REPEAT
-                            SalesInvHeader.Select := FALSE;
-                            SalesInvHeader.MODIFY;
-                        UNTIL SalesInvHeader.NEXT = 0;
+                    // SalesInvHeader.RESET;
+                    // CurrPage.SetSelectionFilter(SalesInvHeader);
+                    // IF SalesInvHeader.FINDSET THEN
+                    //     REPEAT
+                    //         SalesInvHeader.Select := FALSE;
+                    //         SalesInvHeader.MODIFY;
+                    //     UNTIL SalesInvHeader.NEXT = 0;
                 end;
             }
 
@@ -823,6 +909,7 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
                 Ellipsis = true;
 
 
+
                 trigger OnAction()
                 var
                     AuthToken: Text;
@@ -830,7 +917,7 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
 
                     //Added code for BE Live
                     SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE(Select, TRUE);
+                    CurrPage.SetSelectionFilter(SalesInvHeader);
                     IF SalesInvHeader.FINDFIRST THEN BEGIN
 
                         IF NOT CONFIRM('Do you want to Cancel IRN for selected invoices ?', FALSE)
@@ -913,13 +1000,13 @@ pageextension 50077 "Posted Sales Invoices Extn" extends "Posted Sales Invoices"
 
                     END;
 
-                    SalesInvHeader.RESET;
-                    SalesInvHeader.SETRANGE(Select, TRUE);
-                    IF SalesInvHeader.FINDSET THEN
-                        REPEAT
-                            SalesInvHeader.Select := FALSE;
-                            SalesInvHeader.MODIFY;
-                        UNTIL SalesInvHeader.NEXT = 0;
+                    // SalesInvHeader.RESET;
+                    // SalesInvHeader.SETRANGE(Select, TRUE);
+                    // IF SalesInvHeader.FINDSET THEN
+                    //     REPEAT
+                    //         SalesInvHeader.Select := FALSE;
+                    //         SalesInvHeader.MODIFY;
+                    //     UNTIL SalesInvHeader.NEXT = 0;
                 end;
 
             }

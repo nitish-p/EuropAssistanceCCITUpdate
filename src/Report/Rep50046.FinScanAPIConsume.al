@@ -169,11 +169,13 @@ Report 50046 "Fin Scan API Consume"
                     vend."API Screening Result" := vend."api screening result"::PENDING;
                     vend."Screening Result" := vend."screening result"::PENDING;
                     vend."Fin Scan API Screening" := true;
+                    vend.Blocked := vend.Blocked::Payment;//Np 171123
                 end;
                 if jtoken.AsValue().AsText() = '2' then begin
                     vend."API Screening Result" := vend."api screening result"::FAIL;
                     vend."Screening Result" := vend."screening result"::FAIL;
                     vend."Fin Scan API Screening" := true;
+                    vend.Blocked := vend.Blocked::Payment;//Np 171123
                 end;
 
                 vend.Modify;
