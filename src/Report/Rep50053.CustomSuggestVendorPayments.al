@@ -1083,6 +1083,7 @@ Report 50053 "Custom Suggest Vendor Payments"
         DimVal: Record "Dimension Value";
         NewDimensionID: Integer;
         DimSetIDArr: array[10] of Integer;
+        DefaultDimSource: List of [Dictionary of [Integer, Code[20]]];
     begin
         with GenJnlLine do begin
             NewDimensionID := "Dimension Set ID";
@@ -1101,12 +1102,14 @@ Report 50053 "Custom Suggest Vendor Payments"
                 NewDimensionID := DimMgt.GetDimensionSetID(TempDimSetEntry);
                 "Dimension Set ID" := NewDimensionID;
             end;
-            CreateDim(
-              DimMgt.TypeToTableID1("Account Type"), "Account No.",
-              DimMgt.TypeToTableID1("Bal. Account Type"), "Bal. Account No.",
-              Database::Job, "Job No.",
-              Database::"Salesperson/Purchaser", "Salespers./Purch. Code",
-              Database::Campaign, "Campaign No.");
+            CreateDimFromDefaultDim(FieldNo("Account No."));
+            // CreateDim(
+            //   DimMgt.TypeToTableID1("Account Type"), "Account No.",
+            //   DimMgt.TypeToTableID1("Bal. Account Type"), "Bal. Account No.",
+            //   Database::Job, "Job No.",
+            //   Database::"Salesperson/Purchaser", "Salespers./Purch. Code",
+            //   Database::Campaign, "Campaign No.");
+
             if NewDimensionID <> "Dimension Set ID" then begin
                 DimSetIDArr[1] := "Dimension Set ID";
                 DimSetIDArr[2] := NewDimensionID;

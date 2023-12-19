@@ -283,18 +283,18 @@ pageextension 50018 "Purch. Invoice Subform" extends "Purch. Invoice Subform"
             {
                 ApplicationArea = All;
             }
-            field("Department Code"; Rec."Department Code")
-            {
-                ApplicationArea = All;
-            }
-            field("Client Level Code"; Rec."Client Level Code")
-            {
-                ApplicationArea = All;
-            }
-            field("Employee Code"; Rec."Employee Code")
-            {
-                ApplicationArea = All;
-            }
+            // field("Department Code"; Rec."Department Code")
+            // {
+            //     ApplicationArea = All;
+            // }
+            // field("Client Level Code"; Rec."Client Level Code")
+            // {
+            //     ApplicationArea = All;
+            // }
+            // field("Employee Code"; Rec."Employee Code")
+            // {
+            //     ApplicationArea = All;
+            // }
         }
         addafter("Line No.")
         {

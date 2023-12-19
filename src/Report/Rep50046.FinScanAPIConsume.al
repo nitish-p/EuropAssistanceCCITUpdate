@@ -1,7 +1,8 @@
 Report 50046 "Fin Scan API Consume"
 {
     DefaultLayout = RDLC;
-    RDLCLayout = './Layouts/Fin Scan API Consume.rdl';
+    //RDLCLayout = './Layouts/Fin Scan API Consume.rdl';
+    ProcessingOnly = true;
     UsageCategory = Lists;
     ApplicationArea = all;
     dataset
@@ -29,13 +30,14 @@ Report 50046 "Fin Scan API Consume"
 
         recVendor.Reset;
         recVendor.SetRange("Fin Scan API Screening", false);
-        recVendor.SetFilter("Created On", '>%1', 20200605D);
+        //recVendor.SetFilter("Created On", '>%1', 20200605D);
+        //recVendor.SetRange("No.", 'ET000000006');
         if recVendor.FindSet then
             repeat
                 uploadToFinScan(recVendor."No.");
             until recVendor.Next = 0;
 
-        uploadToFinScan('VDMEM000033');
+        //uploadToFinScan('VDMEM000033');
     end;
 
     var
@@ -88,24 +90,39 @@ Report 50046 "Fin Scan API Consume"
             //PostUrl:=//'https:
             //hosted5.finscan.com/isi_test/wrapper/v4.8.2/wrapper/lookup';
             */
-            PostUrl := 'https://hosted5.finscan.com/isi/wrapper/v4.8.2/wrapper/lookup';
+            //PostUrl := 'https://hosted5.finscan.com/isi/wrapper/v4.8.2/wrapper/lookup';
+            PostUrl := 'https://hosted5.finscan.com/isi_test/wrapper/v4.8.2/wrapper/lookup';
 
-            // HttpWebRequestMgt.Initialize(PostUrl);
+            JObject.Add('organizationName', 'Europ_assistance,');
+            JObject.Add('userName', 'webservices_IN');
+            JObject.Add('password', 't9SWk8Tc8AAv');
+            //JObject.Add('password', 'GcF8XMdsPh');
+            JObject.Add('applicationId', 'EA_IN');
+            JObject.Add('searchType', SearchType);
+            JObject.Add('clientId', 'INNAV' + vend."No.");
+            JObject.Add('clientStatus', 0);
+            JObject.Add('gender', '');
+            JObject.Add('nameLine', vend.Name);
+            JObject.Add('addressLine1', vend.Address);
+            JObject.Add('addressLine2', '');
+            JObject.Add('clientSearchCode', 0);
+            JObject.Add('returnComplianceRecords', 0);
+            JObject.Add('addClient', 1);
+            JObject.Add('sendToReview', 1);
+            JObject.Add('updateUserFields', 0);
+            JObject.Add('userField1Label', 'Country');
+            JObject.Add('userField1Value', 'IN');
+            JObject.Add('userField3Label', 'National Tax');
+            JObject.Add('userField3Value', vend."P.A.N. No.");
+            JObject.Add('returnCategory', 0);
+            JObject.Add('returnSourceLists', 0);
+            JObject.Add('generateclientId', 0);
+            JObject.Add('skipSearch', 0);
+            JObject.Add('processUBO', 0);
+            JObject.Add('userFieldsCountry', '[1]');
 
-            // HttpWebRequestMgt.DisableUI;
-            //  HttpContnt.GetHeaders(HttpHdr);
-            HttpHdr.Add('user', 'EA_IN');
-            HttpHdr.Add('password', 'GcF8XMdsPh');
-            HttpHdr.Remove('Content-Type');
-            HttpHdr.Add('Content-Type', 'application/json');
 
-            // HttpWebRequestMgt.SetMethod('POST');
-            // HttpWebRequestMgt.SetContentType('application/json');
-            // HttpWebRequestMgt.SetReturnType('application/json');
-            //HttpWebRequestMgt.AddHeader('user','EA_IN');
-            //HttpWebRequestMgt.AddHeader('password','GcF8XMdsPh');
-
-            body := '{'
+            /*body := '{'
             + '"organizationName":"Europ_assistance",'
             + '"userName":"webservices_IN",'
             + '"password":"GcF8XMdsPh",'
@@ -132,29 +149,21 @@ Report 50046 "Fin Scan API Consume"
             + '"skipSearch":' + '0,'
             + '"processUBO":' + '0,'
             + '"userFieldsCountry":' + '[1]'
-            + '}';
+            + '}';*/
 
             //MESSAGE(body);
+            body := Format(Json);
             MESSAGE(body);
 
             HttpContnt.WriteFrom(body);
+            HttpContnt.GetHeaders(HttpHdr);
+            HttpHdr.Add('user', 'EA_IN');
+            //HttpHdr.Add('password', 'GcF8XMdsPh');
+            HttpHdr.Add('password', 't9SWk8Tc8AAv');
+            HttpHdr.Remove('Content-Type');
+            HttpHdr.Add('Content-Type', 'application/json');
+
             if Httpclint.Post(PostUrl, HttpContnt, HttpResponseMsg) then begin
-                // HttpWebRequestMgt.AddBodyAsText(body);
-
-                // TempBlob.Init;
-
-                // TempBlob.Blob.CreateInstream(Instr);
-
-                // if HttpWebRequestMgt.GetResponse(Instr,HttpStatusCode,ResponseHeaders) then begin
-
-                //MESSAGE('httpstatuscode : '+HttpStatusCode.ToString);
-
-                // MESSAGE(ResponseHeaders.ToString);
-
-                // ApiResult := TempBlob.ReadAsText('',Textencoding::UTF8);
-
-                // MESSAGE(ApiResult);
-
                 HttpResponseMsg.Content.ReadAs(ApiResult);
                 JObject.ReadFrom(ApiResult);
                 // MESSAGE(JObject.GetValue('status').ToString);

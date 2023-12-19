@@ -366,7 +366,7 @@ pageextension 50094 "Purchase Invoices" extends "Purchase Invoices"
             {
                 Promoted = true;
                 ApplicationArea = All;
-                //RunObject = XMLport 50003;
+                RunObject = XMLport 50003;
             }
             action("Import Ez Auto Invoices")
             {

@@ -120,6 +120,18 @@ page 50072 "Kotak Bank List"
                     Xmlport.Import(50052, instream);
                 end;
             }
+            action("Send Data to Bank")
+            {
+                ApplicationArea = All;
+                Image = SendElectronicDocument;
+
+                trigger OnAction()
+                var
+                    CD: Codeunit "Kotak Bank Integration";
+                begin
+                    CD.SendBankPayment(Rec);
+                end;
+            }
         }
     }
 

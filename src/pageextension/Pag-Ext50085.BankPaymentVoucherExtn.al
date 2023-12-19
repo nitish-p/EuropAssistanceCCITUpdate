@@ -115,9 +115,9 @@ pageextension 50085 "Bank Payment Voucher Extn" extends "Bank Payment Voucher"
 
                 begin
 
-                    CustomCreateVendorPmtSuggestion.SetGenJnlLine(Rec);
-                    CustomCreateVendorPmtSuggestion.RUNMODAL;
-                    CLEAR(CustomCreateVendorPmtSuggestion);
+                    // CustomCreateVendorPmtSuggestion.SetGenJnlLine(Rec);
+                    // CustomCreateVendorPmtSuggestion.RUNMODAL;
+                    // CLEAR(CustomCreateVendorPmtSuggestion);
                 end;
             }
         }
@@ -169,7 +169,7 @@ pageextension 50085 "Bank Payment Voucher Extn" extends "Bank Payment Voucher"
         // SMTPSetup: Record 409;
         // SMTPMail: Codeunit 400;
         // ServerInstance: Record 2000000112;
-        CustomCreateVendorPmtSuggestion: Report 50053;
+        //CustomCreateVendorPmtSuggestion: Report 50053; nitish 1412
         report50051: Report 50051;
         BALE: Record 271;
         GenLedSetup: Record 98;

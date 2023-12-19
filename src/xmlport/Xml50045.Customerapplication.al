@@ -57,6 +57,7 @@ xmlport 50045 "Customer application"
     local procedure ApplyCustomer(): Boolean
     var
         bool: Boolean;
+        unapplyparameter: Record "Apply Unapply Parameters" temporary;
     begin
         bool := FALSE;
         chk := 0;
@@ -113,7 +114,9 @@ xmlport 50045 "Customer application"
 
                 IF chk = 1 THEN BEGIN
                     CustLedgerEntry.MODIFY;
-                    CustEntryApplyPostedEntries.Apply(CustLedgerEntry, '', TODAY);
+                    unapplyparameter."Document No." := '';
+                    unapplyparameter."Posting Date" := Today;
+                    CustEntryApplyPostedEntries.Apply(CustLedgerEntry, unapplyparameter);
 
                 END;
                 bool := TRUE;
